@@ -182,7 +182,7 @@ export default function MinimalistPremiumPage() {
       <div className="relative h-screen">
         {/* Product Image */}
         <div
-          className=" relative w-full aspect-[3/4] overflow-hidden flex justify-center "
+          className=" relative w-full aspect-[1/4] overflow-hidden flex justify-center "
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -191,7 +191,7 @@ export default function MinimalistPremiumPage() {
             src={currentProduct.image}
             alt={currentProduct.name}
             width={600} 
-            height={800}
+            height={400}
             className="object-cover rounded-lg"
           />
 
