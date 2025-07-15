@@ -182,16 +182,16 @@ export default function MinimalistPremiumPage() {
       <div className="relative h-screen">
         {/* Product Image */}
         <div
-          className=" relative overflow-hidden flex justify-center "
+          className="h-3/5 relative overflow-hidden"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <Image
-            src={currentProduct.image}
+            src={currentProduct.image || "/placeholder.svg"}
             alt={currentProduct.name}
             fill
-            className="object-cover rounded-lg"
+            className="object-cover"
           />
 
           {/* Navigation Arrows */}
