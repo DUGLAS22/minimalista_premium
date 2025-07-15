@@ -1,13 +1,10 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Heart, ChevronLeft, ChevronRight, Star } from "lucide-react"
 import Link from "next/link"
+import { ArrowLeft, Heart, ShoppingCart, Tag } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { DraggableCart } from "@/components/draggable-cart"
 
 const products = [
@@ -15,9 +12,9 @@ const products = [
     id: 1,
     name: "Camiseta Premium Algodón",
     price: 2250.0,
-    image: "/products/camiseta_basica.jpg?",
-    description:
-      "Confeccionada en algodón 100% orgánico, esta camiseta premium ofrece comodidad excepcional y durabilidad.",
+    offer: true,
+    image: "/products/camisa.jpg",
+    description: "Camiseta 100% algodón orgánico, suave y duradera.",
     colors: ["Negro", "Blanco", "Gris"],
     sizes: ["XS", "S", "M", "L", "XL"],
   },
@@ -25,37 +22,10 @@ const products = [
     id: 2,
     name: "Blazer",
     price: 6250.0,
-    image: "/products/blazer.jpg?height=600&width=400",
-    description:
-      "Blazer de corte impecable diseñado para la mujer moderna. Perfecto para ocasiones formales y casuales.",
+    offer: false,
+    image: "/products/camisa.jpg",
+    description: "Blazer de corte impecable para cualquier ocasión.",
     colors: ["Negro", "Beige", "Azul Marino"],
-    sizes: ["XS", "S", "M", "L", "XL"],
-  },
-  {
-    id: 3,
-    name: "Vestido Elegante",
-    price: 4500.0,
-    image: "/products/vestido.jpg?height=600&width=400",
-    description: "Vestido de líneas limpias y silueta favorecedora. Ideal para eventos especiales y cenas elegantes.",
-    colors: ["Negro", "Blanco", "Rojo"],
-    sizes: ["XS", "S", "M", "L", "XL"],
-  },
-  {
-    id: 4,
-    name: "Falda",
-    price: 3250.0,
-    image: "/products/falda.jpg?height=600&width=400",
-    description: "Falda de corte con acabados de lujo. Combina perfectamente con cualquier blusa.",
-    colors: ["Negro", "Gris", "Azul Marino"],
-    sizes: ["XS", "S", "M", "L", "XL"],
-  },
-  {
-    id: 5,
-    name: "Chaqueta Denim Vintage",
-    price: 10000.0,
-    image: "/products/chaqueta.jpg?height=600&width=400",
-    description: "Abrigo de cachemira pura con diseño atemporal. Una inversión en elegancia y calidad.",
-    colors: ["Camel", "Negro", "Gris"],
     sizes: ["XS", "S", "M", "L", "XL"],
   },
 ]
@@ -71,8 +41,8 @@ export default function MinimalistPremiumPage() {
 
   useEffect(() => {
     setSelectedColor(currentProduct.colors[0])
-    setSelectedSize(currentProduct.sizes[2]) // Default to M
-  }, [currentProductIndex, currentProduct])
+    setSelectedSize(currentProduct.sizes[2])
+  }, [currentProductIndex])
 
   const nextProduct = () => {
     setCurrentProductIndex((prev) => (prev + 1) % products.length)
@@ -83,17 +53,21 @@ export default function MinimalistPremiumPage() {
   }
 
   const addToCart = () => {
-    const existingItem = cartItems.find(
-      (item) => item.id === currentProduct.id && item.size === selectedSize && item.color === selectedColor,
+    const exists = cartItems.find(
+      (item) =>
+        item.id === currentProduct.id &&
+        item.color === selectedColor &&
+        item.size === selectedSize
     )
-
-    if (existingItem) {
+    if (exists) {
       setCartItems(
         cartItems.map((item) =>
-          item.id === currentProduct.id && item.size === selectedSize && item.color === selectedColor
+          item.id === currentProduct.id &&
+          item.color === selectedColor &&
+          item.size === selectedSize
             ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        ),
+            : item
+        )
       )
     } else {
       setCartItems([
@@ -111,206 +85,155 @@ export default function MinimalistPremiumPage() {
     }
   }
 
-  const updateCartQuantity = (id: number, quantity: number) => {
-    if (quantity === 0) {
-      setCartItems(cartItems.filter((item) => item.id !== id))
-    } else {
-      setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
-    }
-  }
-
-  const removeFromCart = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
-
   const toggleFavorite = () => {
     setFavorites((prev) =>
-      prev.includes(currentProduct.id) ? prev.filter((id) => id !== currentProduct.id) : [...prev, currentProduct.id],
+      prev.includes(currentProduct.id)
+        ? prev.filter((id) => id !== currentProduct.id)
+        : [...prev, currentProduct.id]
     )
   }
 
-  // Touch/swipe handlers
+  // Swipe touch logic
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX)
+    setTouchStart(e.touches[0].clientX)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    setTouchEnd(e.touches[0].clientX)
   }
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return
-    const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > 50
-    const isRightSwipe = distance < -50
-
-    if (isLeftSwipe) {
-      nextProduct()
-    }
-    if (isRightSwipe) {
-      prevProduct()
-    }
+    const dist = touchStart - touchEnd
+    if (dist > 50) nextProduct()
+    if (dist < -50) prevProduct()
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4">
-        <div className="flex justify-between items-center">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="bg-white/80 hover:bg-white backdrop-blur-sm">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
+    <div className="relative min-h-screen bg-white text-gray-900">
+      {/* Back button */}
+      <div className="absolute top-4 left-4 z-20">
+        <Link href="/">
+          <Button variant="ghost" size="icon" className="bg-white shadow-sm rounded-full">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
+      </div>
+
+      {/* Image full screen */}
+      <div
+        className="h-[60vh] relative"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <Image
+          src={currentProduct.image}
+          alt={currentProduct.name}
+          fill
+          className="object-contain p-16"
+        />
+
+        {/* Oferta Badge */}
+        {currentProduct.offer && (
+          <div className="absolute top-4 right-4 bg-rose-600 text-white px-3 py-1 rounded-full text-xs flex items-center gap-1 shadow-sm">
+            <Tag className="w-4 h-4" />
+            Oferta
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-start">
+          <h1 className="text-2xl font-semibold">{currentProduct.name}</h1>
+          <span className="text-xl font-medium">L {currentProduct.price.toFixed(2)}</span>
+        </div>
+
+        <p className="text-sm text-gray-500">{currentProduct.description}</p>
+
+        {/* Color select */}
+        <div>
+          <h2 className="text-sm font-medium mb-1">Color</h2>
           <div className="flex gap-2">
-            {products.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentProductIndex ? "bg-rose-500" : "bg-white/50"
+            {currentProduct.colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={`px-3 py-1 text-xs rounded-full border ${
+                  selectedColor === color
+                    ? "bg-black text-white"
+                    : "border-gray-300 text-gray-700"
                 }`}
-              />
+              >
+                {color}
+              </button>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Main Product Display */}
-      <div className="relative h-screen">
-        {/* Product Image */}
-        <div
-          className="h-3/5 relative overflow-hidden"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <Image
-            src={currentProduct.image || "/placeholder.svg"}
-            alt={currentProduct.name}
-            fill
-            className="object-cover"
-          />
-
-          {/* Navigation Arrows */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={prevProduct}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full w-10 h-10 p-0"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={nextProduct}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full w-10 h-10 p-0"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* Product Details */}
-        <div className="h-2/5 p-6 flex flex-col justify-between bg-white/90 backdrop-blur-sm">
-          <div>
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h1 className="text-2xl font-light mb-2 text-gray-800">{currentProduct.name}</h1>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-rose-400 text-rose-400" />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">(4.9)</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-light bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                  L {currentProduct.price.toFixed(2)}
-                </div>
-                <Badge variant="outline" className="mt-1 border-rose-200 text-rose-700">
-                  Premium
-                </Badge>
-              </div>
-            </div>
-
-            <p className="text-gray-600 mb-6 leading-relaxed">{currentProduct.description}</p>
-
-            {/* Color Selection */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2 text-gray-800">Color</h3>
-              <div className="flex gap-2">
-                {currentProduct.colors.map((color) => (
-                  <Button
-                    key={color}
-                    variant={selectedColor === color ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedColor(color)}
-                    className={`text-xs ${
-                      selectedColor === color
-                        ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-                        : "hover:bg-rose-50 hover:border-rose-300"
-                    }`}
-                  >
-                    {color}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Size Selection */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2 text-gray-800">Talla</h3>
-              <div className="flex gap-2">
-                {currentProduct.sizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-10 h-10 p-0 ${
-                      selectedSize === size
-                        ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
-                        : "hover:bg-rose-50 hover:border-rose-300"
-                    }`}
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
+        {/* Size select */}
+        <div>
+          <h2 className="text-3x-1 font-bg mb-1">Talla</h2>
+          <div className="flex gap-2">
+            {currentProduct.sizes.map((size) => (
+              <button
+                key={size}
+                onClick={() => setSelectedSize(size)}
+                className={`w-9 h-9 text-sm rounded-full border ${
+                  selectedSize === size
+                    ? "bg-black text-white"
+                    : "border-gray-300 text-gray-700"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
           </div>
-
-          {/* Add to Cart Button */}
-          <Button
-            onClick={addToCart}
-            className="w-full py-3 text-lg font-light bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg"
-          >
-            Añadir al Carrito
-          </Button>
         </div>
+
+        {/* Add to cart */}
+        <Button
+          onClick={addToCart}
+          className="w-full py-3 text-base bg-black hover:bg-gray-900 text-white rounded-lg"
+        >
+          Añadir al carrito
+        </Button>
       </div>
 
-      {/* Floating Favorites */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleFavorite}
-        className="fixed top-20 right-4 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full w-12 h-12 p-0 shadow-lg"
-      >
-        <Heart
-          className={`w-6 h-6 ${favorites.includes(currentProduct.id) ? "fill-red-500 text-red-500" : "text-gray-600"}`}
-        />
-      </Button>
+      {/* Floating buttons */}
+      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleFavorite}
+          className="bg-white border border-gray-200 shadow rounded-full w-12 h-12"
+        >
+          <Heart
+            className={`w-6 h-6 ${
+              favorites.includes(currentProduct.id)
+                ? "fill-red-500 text-red-500"
+                : "text-gray-700"
+            }`}
+          />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="bg-white border border-gray-200 shadow rounded-full w-12 h-12"
+        >
+          <ShoppingCart className="w-6 h-6 text-gray-700" />
+        </Button>
+      </div>
 
       <DraggableCart
         items={cartItems}
-        onUpdateQuantity={updateCartQuantity}
-        onRemoveItem={removeFromCart}
+        onUpdateQuantity={() => {}}
+        onRemoveItem={() => {}}
         onClose={() => {}}
       />
     </div>
